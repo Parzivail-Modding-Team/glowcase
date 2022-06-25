@@ -14,7 +14,7 @@ import dev.hephaestus.glowcase.block.entity.MailboxBlockEntity;
 import dev.hephaestus.glowcase.block.entity.TextBlockEntity;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Block;
@@ -25,7 +25,7 @@ import net.minecraft.item.*;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.tag.TagKey;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
@@ -59,7 +59,7 @@ public class Glowcase implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(
 					LiteralArgumentBuilder.<ServerCommandSource>literal("mail")
 						.then(CommandManager.argument("pos", new BlockPosArgumentType())
@@ -76,14 +76,14 @@ public class Glowcase implements ModInitializer {
 		if (sender != null) {
 			if (sender.world.getBlockEntity(pos) instanceof MailboxBlockEntity mailbox) {
 				mailbox.addMessage(new MailboxBlockEntity.Message(sender.getUuid(), sender.getEntityName(), message));
-				ctx.getSource().sendFeedback(new TranslatableText("command.glowcase.message_sent"), false);
+				ctx.getSource().sendFeedback(Text.translatable("command.glowcase.message_sent"), false);
 				return 0;
 			} else {
-				ctx.getSource().sendError(new TranslatableText("command.glowcase.failed.no_mailbox"));
+				ctx.getSource().sendError(Text.translatable("command.glowcase.failed.no_mailbox"));
 				return 100;
 			}
 		} else {
-			ctx.getSource().sendError(new TranslatableText("command.glowcase.failed.no_world"));
+			ctx.getSource().sendError(Text.translatable("command.glowcase.failed.no_world"));
 			return 100;
 		}
 	}
