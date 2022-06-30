@@ -30,12 +30,12 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 
-public class Glowcase implements ModInitializer {
+public class Glowcase implements ModInitializer
+{
 	public static final String MODID = "glowcase";
 
 	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.build(id("items"), () -> new ItemStack(Items.GLOWSTONE));
 	public static final TagKey<Item> ITEM_TAG = TagKey.of(Registry.ITEM_KEY, id("items"));
-
 
 	public static final Block HYPERLINK_BLOCK = Registry.register(Registry.BLOCK, id("hyperlink_block"), new HyperlinkBlock());
 	public static final Item HYPERLINK_BLOCK_ITEM = Registry.register(Registry.ITEM, id("hyperlink_block"), new BlockItem(HYPERLINK_BLOCK, new FabricItemSettings().group(ITEM_GROUP)));
@@ -53,36 +53,45 @@ public class Glowcase implements ModInitializer {
 	public static final Item TEXT_BLOCK_ITEM = Registry.register(Registry.ITEM, id("text_block"), new BlockItem(TEXT_BLOCK, new FabricItemSettings().group(ITEM_GROUP)));
 	public static final BlockEntityType<TextBlockEntity> TEXT_BLOCK_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE, id("text_block"), FabricBlockEntityTypeBuilder.create(TextBlockEntity::new, TEXT_BLOCK).build());
 
-	public static Identifier id(String... path) {
+	public static Identifier id(String... path)
+	{
 		return new Identifier(MODID, String.join(".", path));
 	}
 
 	@Override
-	public void onInitialize() {
+	public void onInitialize()
+	{
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(
 					LiteralArgumentBuilder.<ServerCommandSource>literal("mail")
-						.then(CommandManager.argument("pos", new BlockPosArgumentType())
-								.then(CommandManager.argument("message", StringArgumentType.greedyString()).executes(this::sendMessage)))
+					                      .then(CommandManager.argument("pos", new BlockPosArgumentType())
+					                                          .then(CommandManager.argument("message", StringArgumentType.greedyString()).executes(this::sendMessage)))
 			);
 		});
 	}
 
-	private int sendMessage(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+	private int sendMessage(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException
+	{
 		BlockPos pos = BlockPosArgumentType.getBlockPos(ctx, "pos");
 		String message = ctx.getArgument("message", String.class);
 		PlayerEntity sender = ctx.getSource().getPlayer();
 
-		if (sender != null) {
-			if (sender.world.getBlockEntity(pos) instanceof MailboxBlockEntity mailbox) {
+		if (sender != null)
+		{
+			if (sender.world.getBlockEntity(pos) instanceof MailboxBlockEntity mailbox)
+			{
 				mailbox.addMessage(new MailboxBlockEntity.Message(sender.getUuid(), sender.getEntityName(), message));
 				ctx.getSource().sendFeedback(Text.translatable("command.glowcase.message_sent"), false);
 				return 0;
-			} else {
+			}
+			else
+			{
 				ctx.getSource().sendError(Text.translatable("command.glowcase.failed.no_mailbox"));
 				return 100;
 			}
-		} else {
+		}
+		else
+		{
 			ctx.getSource().sendError(Text.translatable("command.glowcase.failed.no_world"));
 			return 100;
 		}

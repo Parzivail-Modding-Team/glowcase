@@ -20,12 +20,16 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3f;
 
-public record ItemDisplayBlockEntityRenderer(BlockEntityRendererFactory.Context context) implements BlockEntityRenderer<ItemDisplayBlockEntity> {
+public record ItemDisplayBlockEntityRenderer(
+		BlockEntityRendererFactory.Context context) implements BlockEntityRenderer<ItemDisplayBlockEntity>
+{
 	@Override
-	public void render(ItemDisplayBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+	public void render(ItemDisplayBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay)
+	{
 		PlayerEntity player = MinecraftClient.getInstance().player;
 
-		if (player == null) return;
+		if (player == null)
+			return;
 
 		matrices.push();
 		matrices.translate(0.5D, 0D, 0.5D);
@@ -33,18 +37,22 @@ public record ItemDisplayBlockEntityRenderer(BlockEntityRendererFactory.Context 
 		float yaw = 0F;
 		float pitch = 0F;
 
-		switch (entity.rotationType) {
-			case TRACKING -> {
+		switch (entity.rotationType)
+		{
+			case TRACKING ->
+			{
 				Vec2f pitchAndYaw = ItemDisplayBlockEntity.getPitchAndYaw(player, entity.getPos());
 				pitch = pitchAndYaw.x;
 				yaw = pitchAndYaw.y;
 				matrices.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion(yaw));
 			}
-			case HORIZONTAL -> {
+			case HORIZONTAL ->
+			{
 				float rotation = -(entity.getCachedState().get(Properties.ROTATION) * 360) / 16.0F;
 				matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(rotation));
 			}
-			case LOCKED -> {
+			case LOCKED ->
+			{
 				pitch = entity.pitch;
 				yaw = entity.yaw;
 				matrices.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion(yaw));
@@ -53,13 +61,18 @@ public record ItemDisplayBlockEntityRenderer(BlockEntityRendererFactory.Context 
 
 		ItemStack stack = entity.getUseStack();
 		Text name;
-		if (stack.getItem() instanceof SpawnEggItem) {
+		if (stack.getItem() instanceof SpawnEggItem)
+		{
 			matrices.push();
 			Entity renderEntity = entity.getDisplayEntity();
-			if (renderEntity != null) {
-				if (stack.hasCustomName()) {
+			if (renderEntity != null)
+			{
+				if (stack.hasCustomName())
+				{
 					name = stack.getName();
-				} else {
+				}
+				else
+				{
 					name = renderEntity.getName();
 				}
 
@@ -72,13 +85,17 @@ public record ItemDisplayBlockEntityRenderer(BlockEntityRendererFactory.Context 
 				matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180));
 				EntityRenderer<? super Entity> entityRenderer = MinecraftClient.getInstance().getEntityRenderDispatcher().getRenderer(renderEntity);
 				entityRenderer.render(renderEntity, 0, tickDelta, matrices, vertexConsumers, light);
-			} else {
+			}
+			else
+			{
 				name = Text.empty();
 			}
 			matrices.pop();
 			matrices.translate(0, 0.125F, 0);
 			matrices.scale(0.5F, 0.5F, 0.5F);
-		} else {
+		}
+		else
+		{
 			name = stack.isEmpty() ? Text.translatable("gui.glowcase.none") : (Text.literal("")).append(stack.getName()).formatted(stack.getRarity().formatting);
 			matrices.translate(0, 0.5, 0);
 			matrices.scale(0.5F, 0.5F, 0.5F);
@@ -86,9 +103,11 @@ public record ItemDisplayBlockEntityRenderer(BlockEntityRendererFactory.Context 
 			MinecraftClient.getInstance().getItemRenderer().renderItem(entity.getUseStack(), ModelTransformation.Mode.FIXED, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, 0);
 		}
 
-		if (entity.showName) {
+		if (entity.showName)
+		{
 			HitResult hitResult = MinecraftClient.getInstance().crosshairTarget;
-			if (hitResult instanceof BlockHitResult && ((BlockHitResult) hitResult).getBlockPos().equals(entity.getPos())) {
+			if (hitResult instanceof BlockHitResult && ((BlockHitResult)hitResult).getBlockPos().equals(entity.getPos()))
+			{
 				matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(180.0F));
 				matrices.translate(0, 0, -0.4);
 

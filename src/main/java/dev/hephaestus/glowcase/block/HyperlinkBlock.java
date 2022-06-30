@@ -21,38 +21,52 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider {
+public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider
+{
 	private static final VoxelShape OUTLINE = VoxelShapes.cuboid(0.25, 0.25, 0.25, 0.75, 0.75, 0.75);
 
 	@Override
-	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context)
+	{
 		return OUTLINE;
 	}
 
 	@Override
-	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
-		if (!world.isClient) {
-			if (placer instanceof ServerPlayerEntity player && player.isCreative() && world.canPlayerModifyAt(player, pos)) {
+	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack)
+	{
+		if (!world.isClient)
+		{
+			if (placer instanceof ServerPlayerEntity player && player.isCreative() && world.canPlayerModifyAt(player, pos))
+			{
 				HyperlinkChannel.openScreen(player, pos);
 			}
 		}
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-		if (world.isClient) {
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit)
+	{
+		if (world.isClient)
+		{
 			return ActionResult.SUCCESS;
-		} else if (player.getStackInHand(hand).isIn(Glowcase.ITEM_TAG)) {
+		}
+		else if (player.getStackInHand(hand).isIn(Glowcase.ITEM_TAG))
+		{
 			this.onPlaced(world, pos, state, player, null);
 			return ActionResult.SUCCESS;
-		} else {
-			if (world.getBlockEntity(pos) instanceof HyperlinkBlockEntity be) {
+		}
+		else
+		{
+			if (world.getBlockEntity(pos) instanceof HyperlinkBlockEntity be)
+			{
 				String url = be.url;
 
-				HyperlinkChannel.confirm((ServerPlayerEntity) player, url);
+				HyperlinkChannel.confirm((ServerPlayerEntity)player, url);
 
 				return ActionResult.SUCCESS;
-			} else {
+			}
+			else
+			{
 				return ActionResult.CONSUME;
 			}
 		}
@@ -60,7 +74,8 @@ public class HyperlinkBlock extends GlowcaseBlock implements BlockEntityProvider
 
 	@Nullable
 	@Override
-	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state)
+	{
 		return new HyperlinkBlockEntity(pos, state);
 	}
 }

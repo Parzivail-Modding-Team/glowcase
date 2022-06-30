@@ -21,35 +21,44 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class TextBlock extends GlowcaseBlock implements BlockEntityProvider {
-	public TextBlock() {
+public class TextBlock extends GlowcaseBlock implements BlockEntityProvider
+{
+	public TextBlock()
+	{
 		super();
 		this.setDefaultState(this.getDefaultState().with(Properties.ROTATION, 0));
 	}
 
 	@Override
-	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+	protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
+	{
 		super.appendProperties(builder);
 		builder.add(Properties.ROTATION);
 	}
 
 	@Override
-	public BlockState getPlacementState(ItemPlacementContext ctx) {
+	public BlockState getPlacementState(ItemPlacementContext ctx)
+	{
 		return this.getDefaultState().with(Properties.ROTATION, MathHelper.floor((double)((180.0F + ctx.getPlayerYaw()) * 16.0F / 360.0F) + 0.5D) & 15);
 	}
 
 	@Override
-	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
-		if (!world.isClient) {
-			if (placer instanceof ServerPlayerEntity player && player.isCreative() && world.canPlayerModifyAt(player, pos)) {
+	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack)
+	{
+		if (!world.isClient)
+		{
+			if (placer instanceof ServerPlayerEntity player && player.isCreative() && world.canPlayerModifyAt(player, pos))
+			{
 				TextBlockChannel.openScreen(player, pos);
 			}
 		}
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-		if (!world.isClient) {
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit)
+	{
+		if (!world.isClient)
+		{
 			this.onPlaced(world, pos, state, player, null);
 		}
 
@@ -58,7 +67,8 @@ public class TextBlock extends GlowcaseBlock implements BlockEntityProvider {
 
 	@Nullable
 	@Override
-	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state)
+	{
 		return new TextBlockEntity(pos, state);
 	}
 }

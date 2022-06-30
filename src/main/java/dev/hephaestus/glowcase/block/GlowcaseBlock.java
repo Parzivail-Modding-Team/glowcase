@@ -13,33 +13,41 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.Nullable;
 
-public class GlowcaseBlock extends Block {
-	public GlowcaseBlock() {
+public class GlowcaseBlock extends Block
+{
+	public GlowcaseBlock()
+	{
 		super(FabricBlockSettings.of(Material.METAL).nonOpaque().strength(-1, Integer.MAX_VALUE));
 	}
 
 	private static final VoxelShape PSEUDO_EMPTY = VoxelShapes.cuboid(0, -1000, 0, 0.1, -999.9, 0.1);
 
 	@Override
-	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context)
+	{
 		if (context != ShapeContext.absent() && context instanceof EntityShapeContext econtext &&
-			econtext.getEntity() instanceof LivingEntity living &&
-			living.getMainHandStack().isIn(Glowcase.ITEM_TAG)
-		) {
+		    econtext.getEntity() instanceof LivingEntity living &&
+		    living.getMainHandStack().isIn(Glowcase.ITEM_TAG)
+		)
+		{
 			return VoxelShapes.fullCube();
-		} else {
+		}
+		else
+		{
 			return PSEUDO_EMPTY;
 		}
 	}
 
 	@Override
-	public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+	public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context)
+	{
 		return VoxelShapes.empty();
 	}
 
 	@Nullable
 	@SuppressWarnings("unchecked")
-	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> checkType(BlockEntityType<A> givenType, BlockEntityType<E> expectedType, BlockEntityTicker<? super E> ticker) {
-		return expectedType == givenType ? (BlockEntityTicker<A>) ticker : null;
+	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> checkType(BlockEntityType<A> givenType, BlockEntityType<E> expectedType, BlockEntityTicker<? super E> ticker)
+	{
+		return expectedType == givenType ? (BlockEntityTicker<A>)ticker : null;
 	}
 }

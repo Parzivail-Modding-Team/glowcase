@@ -15,10 +15,13 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3f;
 
-public record HyperlinkBlockEntityRenderer(BlockEntityRendererFactory.Context context) implements BlockEntityRenderer<HyperlinkBlockEntity> {
+public record HyperlinkBlockEntityRenderer(
+		BlockEntityRendererFactory.Context context) implements BlockEntityRenderer<HyperlinkBlockEntity>
+{
 	public static final ItemStack STACK = new ItemStack(Glowcase.HYPERLINK_BLOCK_ITEM);
 
-	public void render(HyperlinkBlockEntity entity, float f, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+	public void render(HyperlinkBlockEntity entity, float f, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay)
+	{
 		Camera camera = context.getRenderDispatcher().camera;
 		matrices.push();
 		matrices.translate(0.5D, 0.5D, 0.5D);
@@ -30,7 +33,8 @@ public record HyperlinkBlockEntityRenderer(BlockEntityRendererFactory.Context co
 		MinecraftClient.getInstance().getItemRenderer().renderItem(STACK, ModelTransformation.Mode.FIXED, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, 0);
 
 		HitResult hitResult = MinecraftClient.getInstance().crosshairTarget;
-		if (hitResult instanceof BlockHitResult && ((BlockHitResult) hitResult).getBlockPos().equals(entity.getPos())) {
+		if (hitResult instanceof BlockHitResult && ((BlockHitResult)hitResult).getBlockPos().equals(entity.getPos()))
+		{
 			float scale = 0.025F;
 			matrices.scale(scale, scale, scale);
 			matrices.translate(-MinecraftClient.getInstance().textRenderer.getWidth(entity.url) / 2F, -4, 0);

@@ -9,20 +9,24 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
-public class HyperlinkBlockEditScreen extends GlowcaseScreen {
+public class HyperlinkBlockEditScreen extends GlowcaseScreen
+{
 	private final HyperlinkBlockEntity hyperlinkBlockEntity;
 
 	private TextFieldWidget urlEntryWidget;
 
-	public HyperlinkBlockEditScreen(HyperlinkBlockEntity hyperlinkBlockEntity) {
+	public HyperlinkBlockEditScreen(HyperlinkBlockEntity hyperlinkBlockEntity)
+	{
 		this.hyperlinkBlockEntity = hyperlinkBlockEntity;
 	}
 
 	@Override
-	public void init() {
+	public void init()
+	{
 		super.init();
 
-		if (this.client == null) return;
+		if (this.client == null)
+			return;
 
 		this.client.keyboard.setRepeatEvents(true);
 
@@ -36,19 +40,26 @@ public class HyperlinkBlockEditScreen extends GlowcaseScreen {
 	}
 
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) {
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+	{
+		if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE)
+		{
 			this.close();
 			return true;
-		} else if (this.urlEntryWidget.isActive()) {
+		}
+		else if (this.urlEntryWidget.isActive())
+		{
 			return this.urlEntryWidget.keyPressed(keyCode, scanCode, modifiers);
-		}else {
+		}
+		else
+		{
 			return false;
 		}
 	}
 
 	@Override
-	public void close() {
+	public void close()
+	{
 		HyperlinkChannel.save(this.hyperlinkBlockEntity.getPos(), this.urlEntryWidget.getText());
 		super.close();
 	}

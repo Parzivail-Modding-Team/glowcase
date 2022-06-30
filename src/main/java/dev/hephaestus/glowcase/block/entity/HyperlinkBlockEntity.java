@@ -11,43 +11,50 @@ import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
-public class HyperlinkBlockEntity extends BlockEntity {
+public class HyperlinkBlockEntity extends BlockEntity
+{
 	public String url = "";
 
-	public HyperlinkBlockEntity(BlockPos pos, BlockState state) {
+	public HyperlinkBlockEntity(BlockPos pos, BlockState state)
+	{
 		super(Glowcase.HYPERLINK_BLOCK_ENTITY, pos, state);
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt() {
+	public NbtCompound toInitialChunkDataNbt()
+	{
 		NbtCompound tag = super.toInitialChunkDataNbt();
 		writeNbt(tag);
 		return tag;
 	}
 
 	@Override
-	public void writeNbt(NbtCompound tag) {
+	public void writeNbt(NbtCompound tag)
+	{
 		super.writeNbt(tag);
 
 		tag.putString("url", this.url);
 	}
 
 	@Override
-	public void readNbt(NbtCompound tag) {
+	public void readNbt(NbtCompound tag)
+	{
 		super.readNbt(tag);
 
 		this.url = tag.getString("url");
 	}
 
 	@Override
-	public void markDirty() {
+	public void markDirty()
+	{
 		PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
 		super.markDirty();
 	}
 
 	@Nullable
 	@Override
-	public Packet<ClientPlayPacketListener> toUpdatePacket() {
+	public Packet<ClientPlayPacketListener> toUpdatePacket()
+	{
 		return BlockEntityUpdateS2CPacket.create(this);
 	}
 }

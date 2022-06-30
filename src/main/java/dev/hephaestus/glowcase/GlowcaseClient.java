@@ -1,7 +1,6 @@
 package dev.hephaestus.glowcase;
 
 import dev.hephaestus.glowcase.block.entity.MailboxBlockEntity;
-import dev.hephaestus.glowcase.client.render.block.entity.BakedBlockEntityRenderer;
 import dev.hephaestus.glowcase.client.render.block.entity.HyperlinkBlockEntityRenderer;
 import dev.hephaestus.glowcase.client.render.block.entity.ItemDisplayBlockEntityRenderer;
 import dev.hephaestus.glowcase.client.render.block.entity.TextBlockEntityRenderer;
@@ -10,7 +9,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
@@ -23,20 +21,20 @@ import net.minecraft.util.hit.BlockHitResult;
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
-public class GlowcaseClient implements ClientModInitializer {
+public class GlowcaseClient implements ClientModInitializer
+{
 	@Override
-	public void onInitializeClient() {
+	public void onInitializeClient()
+	{
 		BlockEntityRendererRegistry.register(Glowcase.TEXT_BLOCK_ENTITY, TextBlockEntityRenderer::new);
 		BlockEntityRendererRegistry.register(Glowcase.HYPERLINK_BLOCK_ENTITY, HyperlinkBlockEntityRenderer::new);
 		BlockEntityRendererRegistry.register(Glowcase.ITEM_DISPLAY_BLOCK_ENTITY, ItemDisplayBlockEntityRenderer::new);
 
-		WorldRenderEvents.AFTER_ENTITIES.register(ctx ->
-			BakedBlockEntityRenderer.VertexBufferManager.INSTANCE.render(ctx.matrixStack(), ctx.projectionMatrix(), ctx.camera()));
-
 		HudRenderCallback.EVENT.register((matrixStack, tickDelta) -> {
 			MinecraftClient client = MinecraftClient.getInstance();
 
-			if (client.world != null && client.crosshairTarget instanceof BlockHitResult hitResult && client.world.getBlockEntity(hitResult.getBlockPos()) instanceof MailboxBlockEntity mailbox && mailbox.messageCount() > 0 && mailbox.owner().equals(client.getSession().getProfile().getId())) {
+			if (client.world != null && client.crosshairTarget instanceof BlockHitResult hitResult && client.world.getBlockEntity(hitResult.getBlockPos()) instanceof MailboxBlockEntity mailbox && mailbox.messageCount() > 0 && mailbox.owner().equals(client.getSession().getProfile().getId()))
+			{
 				Window window = client.getWindow();
 				TextRenderer textRenderer = client.textRenderer;
 				MailboxBlockEntity.Message message = mailbox.getMessage();
@@ -58,7 +56,8 @@ public class GlowcaseClient implements ClientModInitializer {
 
 				int y = startY + lineHeight * 2;
 
-				for (OrderedText line : lines) {
+				for (OrderedText line : lines)
+				{
 					textRenderer.draw(matrixStack, line, startX + 3, y, -1);
 					y += lineHeight;
 				}
@@ -72,7 +71,6 @@ public class GlowcaseClient implements ClientModInitializer {
 				textRenderer.draw(matrixStack, reminder1, startX + totalWidth - 3 - textRenderer.getWidth(reminder1), y + lineHeight * 2, 0xFFAAAAAA);
 
 				textRenderer.draw(matrixStack, reminder2, startX + totalWidth - 3 - textRenderer.getWidth(reminder2), y + lineHeight * 3, 0xFFAAAAAA);
-
 			}
 		});
 	}

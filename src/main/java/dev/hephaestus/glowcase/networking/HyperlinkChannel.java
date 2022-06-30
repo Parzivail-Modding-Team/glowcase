@@ -28,92 +28,109 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.regex.Pattern;
 
-public class HyperlinkChannel implements ModInitializer, ClientModInitializer {
-    private static final Pattern URL = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
+public class HyperlinkChannel implements ModInitializer, ClientModInitializer
+{
+	private static final Pattern URL = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
 
-    private static final Identifier OPEN = Glowcase.id("channel", "hyperlink", "open");
-    private static final Identifier SAVE = Glowcase.id("channel", "hyperlink", "save");
-    private static final Identifier CONFIRMATION = Glowcase.id("channel", "hyperlink", "confirmation");
+	private static final Identifier OPEN = Glowcase.id("channel", "hyperlink", "open");
+	private static final Identifier SAVE = Glowcase.id("channel", "hyperlink", "save");
+	private static final Identifier CONFIRMATION = Glowcase.id("channel", "hyperlink", "confirmation");
 
-    public static void openScreen(ServerPlayerEntity player, BlockPos pos) {
-        ServerPlayNetworking.send(player, OPEN, new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos));
-    }
+	public static void openScreen(ServerPlayerEntity player, BlockPos pos)
+	{
+		ServerPlayNetworking.send(player, OPEN, new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos));
+	}
 
-    public static void confirm(ServerPlayerEntity player, String url) {
-        ServerPlayNetworking.send(player, CONFIRMATION, new PacketByteBuf(Unpooled.buffer()).writeString(url));
-    }
+	public static void confirm(ServerPlayerEntity player, String url)
+	{
+		ServerPlayNetworking.send(player, CONFIRMATION, new PacketByteBuf(Unpooled.buffer()).writeString(url));
+	}
 
-    @Environment(EnvType.CLIENT)
-    public static void save(BlockPos pos, String url) {
-        ClientPlayNetworking.send(SAVE, new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos).writeString(url));
-    }
+	@Environment(EnvType.CLIENT)
+	public static void save(BlockPos pos, String url)
+	{
+		ClientPlayNetworking.send(SAVE, new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos).writeString(url));
+	}
 
-    @Override
-    @Environment(EnvType.CLIENT)
-    public void onInitializeClient() {
-        ClientPlayConnectionEvents.INIT.register(this::registerListeners);
-    }
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void onInitializeClient()
+	{
+		ClientPlayConnectionEvents.INIT.register(this::registerListeners);
+	}
 
-    @Environment(EnvType.CLIENT)
-    private void registerListeners(ClientPlayNetworkHandler handler, MinecraftClient client) {
-        ClientPlayNetworking.registerReceiver(OPEN, this::openScreen);
-        ClientPlayNetworking.registerReceiver(CONFIRMATION, this::openConfirmationScreen);
-    }
+	@Environment(EnvType.CLIENT)
+	private void registerListeners(ClientPlayNetworkHandler handler, MinecraftClient client)
+	{
+		ClientPlayNetworking.registerReceiver(OPEN, this::openScreen);
+		ClientPlayNetworking.registerReceiver(CONFIRMATION, this::openConfirmationScreen);
+	}
 
-    @Environment(EnvType.CLIENT)
-    private void openScreen(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
-        client.execute(new ScreenOpener(client, buf.readBlockPos()));
-    }
+	@Environment(EnvType.CLIENT)
+	private void openScreen(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender)
+	{
+		client.execute(new ScreenOpener(client, buf.readBlockPos()));
+	}
 
-    @Environment(EnvType.CLIENT)
-    private void openConfirmationScreen(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
-        client.execute(new UrlOpener(client, buf.readString()));
-    }
+	@Environment(EnvType.CLIENT)
+	private void openConfirmationScreen(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender)
+	{
+		client.execute(new UrlOpener(client, buf.readString()));
+	}
 
-    @Override
-    public void onInitialize() {
-        ServerPlayConnectionEvents.INIT.register((handler, server) -> ServerPlayNetworking.registerReceiver(handler, SAVE, this::save));
-    }
+	@Override
+	public void onInitialize()
+	{
+		ServerPlayConnectionEvents.INIT.register((handler, server) -> ServerPlayNetworking.registerReceiver(handler, SAVE, this::save));
+	}
 
-    private void save(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
-        BlockPos pos = buf.readBlockPos();
-        String url = buf.readString();
+	private void save(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender)
+	{
+		BlockPos pos = buf.readBlockPos();
+		String url = buf.readString();
 
-        server.execute(() -> {
-            BlockEntity blockEntity = player.world.getBlockEntity(pos);
+		server.execute(() -> {
+			BlockEntity blockEntity = player.world.getBlockEntity(pos);
 
-            if (blockEntity instanceof HyperlinkBlockEntity && URL.matcher(url).matches()) {
-                ((HyperlinkBlockEntity) blockEntity).url = url;
-                blockEntity.markDirty();
-            }
-        });
-    }
+			if (blockEntity instanceof HyperlinkBlockEntity && URL.matcher(url).matches())
+			{
+				((HyperlinkBlockEntity)blockEntity).url = url;
+				blockEntity.markDirty();
+			}
+		});
+	}
 
-    @Environment(EnvType.CLIENT)
-    private record ScreenOpener(MinecraftClient client, BlockPos pos) implements Runnable {
-        @Override
-        public void run() {
-            if (this.client.world != null && this.client.world.getBlockEntity(this.pos) instanceof HyperlinkBlockEntity be) {
-                MinecraftClient.getInstance().setScreen(new HyperlinkBlockEditScreen(be));
-            }
-        }
-    }
+	@Environment(EnvType.CLIENT)
+	private record ScreenOpener(MinecraftClient client, BlockPos pos) implements Runnable
+	{
+		@Override
+		public void run()
+		{
+			if (this.client.world != null && this.client.world.getBlockEntity(this.pos) instanceof HyperlinkBlockEntity be)
+			{
+				MinecraftClient.getInstance().setScreen(new HyperlinkBlockEditScreen(be));
+			}
+		}
+	}
 
-    @Environment(EnvType.CLIENT)
-    private record UrlOpener(MinecraftClient client, String url) implements Runnable, BooleanConsumer {
-        @Override
-        public void run() {
-            this.client.setScreen(new ConfirmChatLinkScreen(this, url, false));
-        }
+	@Environment(EnvType.CLIENT)
+	private record UrlOpener(MinecraftClient client, String url) implements Runnable, BooleanConsumer
+	{
+		@Override
+		public void run()
+		{
+			this.client.setScreen(new ConfirmChatLinkScreen(this, url, false));
+		}
 
+		@Override
+		public void accept(boolean bl)
+		{
+			if (bl)
+			{
+				Util.getOperatingSystem().open(url);
+			}
 
-        @Override
-        public void accept(boolean bl) {
-            if (bl) {
-                Util.getOperatingSystem().open(url);
-            }
-
-            this.client.setScreen(null);
-        }
-    }
+			this.client.setScreen(null);
+		}
+	}
 }

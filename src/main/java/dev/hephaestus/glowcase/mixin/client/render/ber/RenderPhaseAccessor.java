@@ -8,19 +8,23 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Environment(EnvType.CLIENT)
 @Mixin(RenderPhase.class)
-public interface RenderPhaseAccessor {
+public interface RenderPhaseAccessor
+{
 	@Accessor
-	static RenderPhase.TextureBase getNO_TEXTURE() {
+	static RenderPhase.TextureBase getNO_TEXTURE()
+	{
 		throw new RuntimeException("Mixin not applied");
 	}
 
 	@Accessor
-	static RenderPhase.Transparency getTRANSLUCENT_TRANSPARENCY() {
+	static RenderPhase.Transparency getTRANSLUCENT_TRANSPARENCY()
+	{
 		throw new RuntimeException("Mixin not applied");
 	}
 
 	@Accessor
-	static RenderPhase.Shader getCOLOR_SHADER() {
+	static RenderPhase.Shader getCOLOR_SHADER()
+	{
 		throw new RuntimeException("Mixin not applied");
 	}
 }

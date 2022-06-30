@@ -17,34 +17,41 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-public class MailboxChannel implements ClientModInitializer {
-    private static final Identifier ID = Glowcase.id("channel", "mailbox");
+public class MailboxChannel implements ClientModInitializer
+{
+	private static final Identifier ID = Glowcase.id("channel", "mailbox");
 
-    public static void openChat(ServerPlayerEntity player, BlockPos pos) {
-        ServerPlayNetworking.send(player, ID, new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos));
-    }
+	public static void openChat(ServerPlayerEntity player, BlockPos pos)
+	{
+		ServerPlayNetworking.send(player, ID, new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos));
+	}
 
-    @Override
-    @Environment(EnvType.CLIENT)
-    public void onInitializeClient() {
-        ClientPlayConnectionEvents.INIT.register(this::registerListener);
-    }
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void onInitializeClient()
+	{
+		ClientPlayConnectionEvents.INIT.register(this::registerListener);
+	}
 
-    @Environment(EnvType.CLIENT)
-    private void registerListener(ClientPlayNetworkHandler handler, MinecraftClient client) {
-        ClientPlayNetworking.registerReceiver(ID, this::openChat);
-    }
+	@Environment(EnvType.CLIENT)
+	private void registerListener(ClientPlayNetworkHandler handler, MinecraftClient client)
+	{
+		ClientPlayNetworking.registerReceiver(ID, this::openChat);
+	}
 
-    @Environment(EnvType.CLIENT)
-    private void openChat(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
-        client.execute(new ChatOpener(client, buf.readBlockPos()));
-    }
+	@Environment(EnvType.CLIENT)
+	private void openChat(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender)
+	{
+		client.execute(new ChatOpener(client, buf.readBlockPos()));
+	}
 
-    @Environment(EnvType.CLIENT)
-    private static record ChatOpener(MinecraftClient client, BlockPos pos) implements Runnable {
-        @Override
-        public void run() {
-            ((MinecraftClientAccessor) this.client).invokeOpenChatScreen(String.format("/mail %d %d %d ", this.pos.getX(), this.pos.getY(), this.pos.getZ()));
-        }
-    }
+	@Environment(EnvType.CLIENT)
+	private static record ChatOpener(MinecraftClient client, BlockPos pos) implements Runnable
+	{
+		@Override
+		public void run()
+		{
+			((MinecraftClientAccessor)this.client).invokeOpenChatScreen(String.format("/mail %d %d %d ", this.pos.getX(), this.pos.getY(), this.pos.getZ()));
+		}
+	}
 }

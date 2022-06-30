@@ -8,22 +8,26 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
 @Environment(EnvType.CLIENT)
-public class ItemDisplayBlockEditScreen extends GlowcaseScreen {
+public class ItemDisplayBlockEditScreen extends GlowcaseScreen
+{
 	private final ItemDisplayBlockEntity displayBlock;
 
 	private ButtonWidget givesItemButtom;
 	private ButtonWidget rotationTypeButton;
 	private ButtonWidget showNameButton;
 
-	public ItemDisplayBlockEditScreen(ItemDisplayBlockEntity displayBlock) {
+	public ItemDisplayBlockEditScreen(ItemDisplayBlockEntity displayBlock)
+	{
 		this.displayBlock = displayBlock;
 	}
 
 	@Override
-	public void init() {
+	public void init()
+	{
 		super.init();
 
-		if (this.client != null) {
+		if (this.client != null)
+		{
 			int padding = width / 100;
 			int individualPadding = padding / 2;
 			int centerW = width / 2;

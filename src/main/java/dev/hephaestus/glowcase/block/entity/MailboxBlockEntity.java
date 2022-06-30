@@ -20,117 +20,141 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.UUID;
 
-public class MailboxBlockEntity extends BlockEntity {
-    private final Deque<Message> messages = new ArrayDeque<>();
-    private UUID owner;
+public class MailboxBlockEntity extends BlockEntity
+{
+	private final Deque<Message> messages = new ArrayDeque<>();
+	private UUID owner;
 
-    public MailboxBlockEntity(BlockPos pos, BlockState state) {
-        super(Glowcase.MAILBOX_BLOCK_ENTITY, pos, state);
-    }
+	public MailboxBlockEntity(BlockPos pos, BlockState state)
+	{
+		super(Glowcase.MAILBOX_BLOCK_ENTITY, pos, state);
+	}
 
-    public void setOwner(ServerPlayerEntity player) {
-        this.owner = player.getUuid();
-        this.markDirty();
-    }
+	public void setOwner(ServerPlayerEntity player)
+	{
+		this.owner = player.getUuid();
+		this.markDirty();
+	}
 
-    public void addMessage(Message message) {
-        this.messages.addFirst(message);
+	public void addMessage(Message message)
+	{
+		this.messages.addFirst(message);
 
-        if (this.world != null) {
-            this.world.setBlockState(this.pos, this.getCachedState().with(MailboxBlock.HAS_MAIL, true));
-        }
+		if (this.world != null)
+		{
+			this.world.setBlockState(this.pos, this.getCachedState().with(MailboxBlock.HAS_MAIL, true));
+		}
 
-        this.markDirty();
-    }
+		this.markDirty();
+	}
 
-    public void removeMessage() {
-        if (this.world != null && this.messages.isEmpty()) {
-            //whuh? This prooobably shouldn't happen, but if it does just reset the state to empty
-            this.world.setBlockState(this.pos, this.getCachedState().with(MailboxBlock.HAS_MAIL, false));
-        } else if (this.messages.removeFirst() != null && this.world != null && this.messages.isEmpty()) {
-            this.world.setBlockState(this.pos, this.getCachedState().with(MailboxBlock.HAS_MAIL, false));
-            this.markDirty();
-        }
-    }
+	public void removeMessage()
+	{
+		if (this.world != null && this.messages.isEmpty())
+		{
+			//whuh? This prooobably shouldn't happen, but if it does just reset the state to empty
+			this.world.setBlockState(this.pos, this.getCachedState().with(MailboxBlock.HAS_MAIL, false));
+		}
+		else if (this.messages.removeFirst() != null && this.world != null && this.messages.isEmpty())
+		{
+			this.world.setBlockState(this.pos, this.getCachedState().with(MailboxBlock.HAS_MAIL, false));
+			this.markDirty();
+		}
+	}
 
-    public int messageCount() {
-        return this.messages.size();
-    }
+	public int messageCount()
+	{
+		return this.messages.size();
+	}
 
-    public Message getMessage() {
-        return this.messages.getFirst();
-    }
+	public Message getMessage()
+	{
+		return this.messages.getFirst();
+	}
 
-    @Override
-    public NbtCompound toInitialChunkDataNbt() {
-        NbtCompound tag = super.toInitialChunkDataNbt();
-        writeNbt(tag);
-        return tag;
-    }
+	@Override
+	public NbtCompound toInitialChunkDataNbt()
+	{
+		NbtCompound tag = super.toInitialChunkDataNbt();
+		writeNbt(tag);
+		return tag;
+	}
 
-    @Override
-    public void writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
+	@Override
+	public void writeNbt(NbtCompound nbt)
+	{
+		super.writeNbt(nbt);
 
-        nbt.putUuid("Owner", this.owner);
+		nbt.putUuid("Owner", this.owner);
 
-        NbtList list = nbt.getList("Messages", NbtType.COMPOUND);
+		NbtList list = nbt.getList("Messages", NbtType.COMPOUND);
 
-        for (Message message : this.messages) {
-            NbtCompound messageTag = new NbtCompound();
+		for (Message message : this.messages)
+		{
+			NbtCompound messageTag = new NbtCompound();
 
-            messageTag.putUuid("Sender", message.sender);
-            messageTag.putString("SenderName", message.senderName);
-            messageTag.putString("Message", message.message);
+			messageTag.putUuid("Sender", message.sender);
+			messageTag.putString("SenderName", message.senderName);
+			messageTag.putString("Message", message.message);
 
-            list.add(messageTag);
-        }
+			list.add(messageTag);
+		}
 
-        nbt.put("Messages", list);
-    }
+		nbt.put("Messages", list);
+	}
 
-    @Override
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+	@Override
+	public void readNbt(NbtCompound nbt)
+	{
+		super.readNbt(nbt);
 
-        this.owner = nbt.getUuid("Owner");
-        this.messages.clear();
+		this.owner = nbt.getUuid("Owner");
+		this.messages.clear();
 
-        for (NbtElement element : nbt.getList("Messages", NbtType.COMPOUND)) {
-            if (element instanceof NbtCompound message) {
-                this.messages.addLast(new Message(
-                        message.getUuid("Sender"),
-                        message.getString("SenderName"),
-                        message.getString("Message")
-                ));
-            }
-        }
-    }
+		for (NbtElement element : nbt.getList("Messages", NbtType.COMPOUND))
+		{
+			if (element instanceof NbtCompound message)
+			{
+				this.messages.addLast(new Message(
+						message.getUuid("Sender"),
+						message.getString("SenderName"),
+						message.getString("Message")
+				));
+			}
+		}
+	}
 
-    @Override
-    public void markDirty() {
-        PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
-        super.markDirty();
-    }
+	@Override
+	public void markDirty()
+	{
+		PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
+		super.markDirty();
+	}
 
-    @Nullable
-    @Override
-    public Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
-    }
+	@Nullable
+	@Override
+	public Packet<ClientPlayPacketListener> toUpdatePacket()
+	{
+		return BlockEntityUpdateS2CPacket.create(this);
+	}
 
-    public UUID owner() {
-        return this.owner;
-    }
+	public UUID owner()
+	{
+		return this.owner;
+	}
 
-    public void removeAllMessagesFromMostRecentSender() {
-        if (!this.messages.isEmpty()) {
-            UUID sender = this.messages.pop().sender;
+	public void removeAllMessagesFromMostRecentSender()
+	{
+		if (!this.messages.isEmpty())
+		{
+			UUID sender = this.messages.pop().sender;
 
-            this.messages.removeIf(message -> message.sender.equals(sender));
-            this.markDirty();
-        }
-    }
+			this.messages.removeIf(message -> message.sender.equals(sender));
+			this.markDirty();
+		}
+	}
 
-    public static record Message(UUID sender, String senderName, String message) {}
+	public static record Message(UUID sender, String senderName, String message)
+	{
+	}
 }

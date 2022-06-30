@@ -24,89 +24,101 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 
-public class ItemDisplayBlockChannel implements ModInitializer, ClientModInitializer {
-    private static final Identifier ID = Glowcase.id("channel", "item_display");
+public class ItemDisplayBlockChannel implements ModInitializer, ClientModInitializer
+{
+	private static final Identifier ID = Glowcase.id("channel", "item_display");
 
-    public static void openScreen(ServerPlayerEntity player, BlockPos pos) {
-        ServerPlayNetworking.send(player, ID, new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos));
-    }
-    
-    @Environment(EnvType.CLIENT)
-    public static void sync(ItemDisplayBlockEntity itemDisplayBlockEntity, boolean updatePitchAndYaw) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeBlockPos(itemDisplayBlockEntity.getPos());
-        buf.writeEnumConstant(itemDisplayBlockEntity.rotationType);
-        buf.writeEnumConstant(itemDisplayBlockEntity.givesItem);
-        buf.writeVarInt(itemDisplayBlockEntity.getCachedState().get(Properties.ROTATION));
-        buf.writeBoolean(itemDisplayBlockEntity.showName);
+	public static void openScreen(ServerPlayerEntity player, BlockPos pos)
+	{
+		ServerPlayNetworking.send(player, ID, new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos));
+	}
 
-        if (updatePitchAndYaw && MinecraftClient.getInstance().player != null) {
-            Vec2f pitchAndYaw = ItemDisplayBlockEntity.getPitchAndYaw(MinecraftClient.getInstance().player, itemDisplayBlockEntity.getPos());
-            itemDisplayBlockEntity.pitch = pitchAndYaw.x;
-            itemDisplayBlockEntity.yaw = pitchAndYaw.y;
-        }
+	@Environment(EnvType.CLIENT)
+	public static void sync(ItemDisplayBlockEntity itemDisplayBlockEntity, boolean updatePitchAndYaw)
+	{
+		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+		buf.writeBlockPos(itemDisplayBlockEntity.getPos());
+		buf.writeEnumConstant(itemDisplayBlockEntity.rotationType);
+		buf.writeEnumConstant(itemDisplayBlockEntity.givesItem);
+		buf.writeVarInt(itemDisplayBlockEntity.getCachedState().get(Properties.ROTATION));
+		buf.writeBoolean(itemDisplayBlockEntity.showName);
 
-        buf.writeFloat(itemDisplayBlockEntity.pitch);
-        buf.writeFloat(itemDisplayBlockEntity.yaw);
+		if (updatePitchAndYaw && MinecraftClient.getInstance().player != null)
+		{
+			Vec2f pitchAndYaw = ItemDisplayBlockEntity.getPitchAndYaw(MinecraftClient.getInstance().player, itemDisplayBlockEntity.getPos());
+			itemDisplayBlockEntity.pitch = pitchAndYaw.x;
+			itemDisplayBlockEntity.yaw = pitchAndYaw.y;
+		}
 
-        ClientPlayNetworking.send(ID, buf);
+		buf.writeFloat(itemDisplayBlockEntity.pitch);
+		buf.writeFloat(itemDisplayBlockEntity.yaw);
 
-    }
+		ClientPlayNetworking.send(ID, buf);
+	}
 
-    @Override
-    @Environment(EnvType.CLIENT)
-    public void onInitializeClient() {
-        ClientPlayConnectionEvents.INIT.register(this::registerListener);
-    }
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void onInitializeClient()
+	{
+		ClientPlayConnectionEvents.INIT.register(this::registerListener);
+	}
 
-    @Environment(EnvType.CLIENT)
-    private void registerListener(ClientPlayNetworkHandler handler, MinecraftClient client) {
-        ClientPlayNetworking.registerReceiver(ID, this::openScreen);
-    }
+	@Environment(EnvType.CLIENT)
+	private void registerListener(ClientPlayNetworkHandler handler, MinecraftClient client)
+	{
+		ClientPlayNetworking.registerReceiver(ID, this::openScreen);
+	}
 
-    @Environment(EnvType.CLIENT)
-    private void openScreen(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
-        client.execute(new ScreenOpener(client, buf.readBlockPos()));
-    }
+	@Environment(EnvType.CLIENT)
+	private void openScreen(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender)
+	{
+		client.execute(new ScreenOpener(client, buf.readBlockPos()));
+	}
 
-    @Override
-    public void onInitialize() {
-        ServerPlayConnectionEvents.INIT.register(((handler, server) ->
-                ServerPlayNetworking.registerReceiver(handler, ID, this::save)));
-    }
+	@Override
+	public void onInitialize()
+	{
+		ServerPlayConnectionEvents.INIT.register(((handler, server) ->
+				ServerPlayNetworking.registerReceiver(handler, ID, this::save)));
+	}
 
-    private void save(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
-        BlockPos pos = buf.readBlockPos();
-        ItemDisplayBlockEntity.RotationType rotationType = buf.readEnumConstant(ItemDisplayBlockEntity.RotationType.class);
-        ItemDisplayBlockEntity.GivesItem givesItem = buf.readEnumConstant(ItemDisplayBlockEntity.GivesItem.class);
-        int rotation = buf.readVarInt();
-        boolean showName = buf.readBoolean();
+	private void save(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender)
+	{
+		BlockPos pos = buf.readBlockPos();
+		ItemDisplayBlockEntity.RotationType rotationType = buf.readEnumConstant(ItemDisplayBlockEntity.RotationType.class);
+		ItemDisplayBlockEntity.GivesItem givesItem = buf.readEnumConstant(ItemDisplayBlockEntity.GivesItem.class);
+		int rotation = buf.readVarInt();
+		boolean showName = buf.readBoolean();
 
-        float pitch = buf.readFloat();
-        float yaw = buf.readFloat();
+		float pitch = buf.readFloat();
+		float yaw = buf.readFloat();
 
-        server.execute(() -> {
-            if (player.world.getBlockEntity(pos) instanceof ItemDisplayBlockEntity be) {
-                be.givesItem = givesItem;
-                be.rotationType = rotationType;
-                be.pitch = pitch;
-                be.yaw = yaw;
-                be.showName = showName;
+		server.execute(() -> {
+			if (player.world.getBlockEntity(pos) instanceof ItemDisplayBlockEntity be)
+			{
+				be.givesItem = givesItem;
+				be.rotationType = rotationType;
+				be.pitch = pitch;
+				be.yaw = yaw;
+				be.showName = showName;
 
-                player.world.setBlockState(pos, player.world.getBlockState(pos).with(Properties.ROTATION, rotation));
+				player.world.setBlockState(pos, player.world.getBlockState(pos).with(Properties.ROTATION, rotation));
 
-                be.markDirty();
-            }
-        });
-    }
+				be.markDirty();
+			}
+		});
+	}
 
-    @Environment(EnvType.CLIENT)
-    private record ScreenOpener(MinecraftClient client, BlockPos pos) implements Runnable {
-        @Override
-        public void run() {
-            if (this.client.world != null && client.world.getBlockEntity(this.pos) instanceof ItemDisplayBlockEntity be) {
-                this.client.setScreen(new ItemDisplayBlockEditScreen(be));
-            }
-        }
-    }
+	@Environment(EnvType.CLIENT)
+	private record ScreenOpener(MinecraftClient client, BlockPos pos) implements Runnable
+	{
+		@Override
+		public void run()
+		{
+			if (this.client.world != null && client.world.getBlockEntity(this.pos) instanceof ItemDisplayBlockEntity be)
+			{
+				this.client.setScreen(new ItemDisplayBlockEditScreen(be));
+			}
+		}
+	}
 }

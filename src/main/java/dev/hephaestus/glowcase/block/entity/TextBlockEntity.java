@@ -1,7 +1,6 @@
 package dev.hephaestus.glowcase.block.entity;
 
 import dev.hephaestus.glowcase.Glowcase;
-import dev.hephaestus.glowcase.client.render.block.entity.BakedBlockEntityRenderer;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -20,29 +19,33 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextBlockEntity extends BlockEntity {
+public class TextBlockEntity extends BlockEntity
+{
 	public List<MutableText> lines = new ArrayList<>();
 	public TextAlignment textAlignment = TextAlignment.CENTER;
-	public  ZOffset zOffset = ZOffset.CENTER;
+	public ZOffset zOffset = ZOffset.CENTER;
 	public ShadowType shadowType = ShadowType.DROP;
 	public float scale = 1F;
 	public int color = 0xFFFFFF;
 	public boolean renderDirty = true;
 
-	public TextBlockEntity(BlockPos pos, BlockState state) {
+	public TextBlockEntity(BlockPos pos, BlockState state)
+	{
 		super(Glowcase.TEXT_BLOCK_ENTITY, pos, state);
 		lines.add(Text.empty());
 	}
 
 	@Override
-	public NbtCompound toInitialChunkDataNbt() {
+	public NbtCompound toInitialChunkDataNbt()
+	{
 		NbtCompound tag = super.toInitialChunkDataNbt();
 		writeNbt(tag);
 		return tag;
 	}
 
 	@Override
-	public void writeNbt(NbtCompound tag) {
+	public void writeNbt(NbtCompound tag)
+	{
 		super.writeNbt(tag);
 
 		tag.putFloat("scale", this.scale);
@@ -53,7 +56,8 @@ public class TextBlockEntity extends BlockEntity {
 		tag.putString("shadow_type", this.shadowType.name());
 
 		NbtList lines = tag.getList("lines", 8);
-		for (MutableText text : this.lines) {
+		for (MutableText text : this.lines)
+		{
 			lines.add(NbtString.of(Text.Serializer.toJson(text)));
 		}
 
@@ -61,7 +65,8 @@ public class TextBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public void readNbt(NbtCompound tag) {
+	public void readNbt(NbtCompound tag)
+	{
 		super.readNbt(tag);
 
 		this.lines = new ArrayList<>();
@@ -74,42 +79,40 @@ public class TextBlockEntity extends BlockEntity {
 
 		NbtList lines = tag.getList("lines", 8);
 
-		for (NbtElement line : lines) {
+		for (NbtElement line : lines)
+		{
 			this.lines.add(Text.Serializer.fromJson(line.asString()));
 		}
-		
+
 		this.renderDirty = true;
 	}
 
 	@Override
-	public void markDirty() {
+	public void markDirty()
+	{
 		PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
 		super.markDirty();
 	}
 
 	@Nullable
 	@Override
-	public Packet<ClientPlayPacketListener> toUpdatePacket() {
+	public Packet<ClientPlayPacketListener> toUpdatePacket()
+	{
 		return BlockEntityUpdateS2CPacket.create(this);
 	}
 
-	public enum TextAlignment {
+	public enum TextAlignment
+	{
 		LEFT, CENTER, RIGHT
 	}
 
-	public enum ZOffset {
+	public enum ZOffset
+	{
 		FRONT, CENTER, BACK
 	}
 
-	public enum ShadowType {
+	public enum ShadowType
+	{
 		DROP, PLATE, NONE
-	}
-
-	@SuppressWarnings({"MethodCallSideOnly", "VariableUseSideOnly"})
-	@Override
-	public void markRemoved() {
-		if (world != null && world.isClient) {
-			BakedBlockEntityRenderer.VertexBufferManager.INSTANCE.invalidate(getPos());
-		}
 	}
 }
